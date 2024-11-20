@@ -18,3 +18,5 @@ texts = [[word for word in document.lower().split() if word not in stoplist]
 print(texts)
 
 exit()
+
+
