@@ -23,8 +23,8 @@ class TorchModel(nn.Module):
 
     # 当输入真实标签，返回loss值；无真实标签，返回预测值
     def forward(self, x, y=None):
-        x = self.linear(x)  # (batch_size, input_size) -> (batch_size, 1)
-        y_pred = self.activation(x, -1)  # (batch_size, 1) -> (batch_size, 1)
+        x = self.linear(x)
+        y_pred = self.activation(x, -1)
         if y is not None:
             return self.loss(y_pred, y)  # 预测值和真实值计算损失
         else:
