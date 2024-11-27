@@ -16,7 +16,8 @@ class TorchModel(nn.Module):
         super(TorchModel, self).__init__()
         # input_size输入样本大小, num_classes表示输出的类别数量
         self.linear = nn.Linear(input_size, num_classes)
-        self.activation = torch.softmax
+        # self.activation = torch.softmax
+        self.activation = nn.functional.softmax
         self.loss = nn.functional.cross_entropy
 
     def forward(self, x, y=None):
