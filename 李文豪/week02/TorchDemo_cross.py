@@ -3,14 +3,20 @@ import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""
 
+基于pytorch框架编写模型训练
+实现一个自行构造的找规律(机器学习)任务
+规律：x是一个5维向量，如果第1个数>第5个数，则为正样本，反之为负样本
+
+"""
 
 class TorchModel(nn.Module):
     def __init__(self,input_size):
         super(TorchModel,self).__init__()
         self.linear = nn.Linear(input_size,input_size)
         self.activation = torch.sigmoid
-        self.loss = nn.CrossEntropyLoss()
+        self.loss = nn.CrossEntropyLoss # 函数使用交叉熵函数
     def forward(self,x,y=None):
         x = self.linear(x)
         # print("forward --- 1")
@@ -24,7 +30,7 @@ class TorchModel(nn.Module):
         else:
             return y_pred
 
-
+# 生成样本
 def build_sample():
     x = np.random.random(5)
     y = np.zeros(5)
@@ -32,6 +38,7 @@ def build_sample():
     # return x,y
     return x,np.argmax(x)
 
+# 获取批次样本
 def build_dataset(train_sample):
     X = []
     Y = []
@@ -39,7 +46,7 @@ def build_dataset(train_sample):
         x,y = build_sample()
         # print(":::::::::::::",i,x,np.argmax(x))
         X.append(x)
-        Y.append(y)
+        Y.append(y)  #这里跟平方差损失函数有所区别，不能加[]
     return torch.FloatTensor(X),torch.LongTensor(Y)
 
 
