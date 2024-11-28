@@ -91,7 +91,7 @@ def main():
     lr是学习率参数
     '''
     optim = torch.optim.Adam(model.parameters(), lr=learning_rate)
-
+    log = []
     #这里是要训练5000个样本到数据集中，并且返回最终转换成的X张量和对应的Y标签信息
     #转换后的 train_x 是一个形状为 (5000, 5) （即5000行，5列，这个形式代表二维）的浮点类型张量，它包含了5000个样本，每个样本都是一个五维的向量。而 train_y 是一个形状为 (5000,) （表示一个包含5000个整数的数组，这个形式代表一维）的长整型张量，它包含了与 train_x 中每个样本相对应的标签。
     train_x, train_y = build_dataset(train_sample)
@@ -120,17 +120,53 @@ def main():
             watch_loss.append(loss.item())
         # 打印当前epoch的平均损失值
         print("=========\n第%d轮平均loss:%f" % (epoch + 1, np.mean(watch_loss)))
-        acc = evaluate(model)
-        # 这里可以添加日志记录或其他处理
-
+        acc = evaluate(model)  # 测试本轮模型结果
+        log.append([acc, float(np.mean(watch_loss))])
+        # 保存模型
     torch.save(model.state_dict(), "model.bin")
-    # 画图部分可以保留或根据需要调整
+    # 画图
+    print(log)
+    plt.plot(range(len(log)), [l[0] for l in log], label="acc")  # 画acc曲线
+    plt.plot(range(len(log)), [l[1] for l in log], label="loss")  # 画loss曲线
+    plt.legend()
+    plt.show()
+    return
+
+
+# 使用训练好的模型做预测
+def predict(model_path, input_vecs):
+    input_size = 5
+    num_classes = 5
+    model = TorchModel(input_size, num_classes)
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))  # 加载训练好的权重，确保在CPU上加载
+    print(model.state_dict())  # 可选：打印模型参数
+
+    model.eval()  # 测试模式
+    with torch.no_grad():  # 不计算梯度
+        # 将输入向量转换为PyTorch张量，并添加一个新的维度以匹配模型的输入要求（batch_size, input_size）
+        input_tensor = torch.FloatTensor(input_vecs)
+        result = model(input_tensor)  # 模型预测
+
+    # 对于每个输入向量和对应的预测结果
+    for vec, res in zip(input_vecs, result):
+        # 找到具有最高分数的类别的索引
+        predicted_class = torch.argmax(res, dim=0).item()
+        # 如果需要，可以计算softmax来获得概率分布（但这里只打印预测的类别和索引为predicted_class的分数）
+        # probabilities = torch.softmax(res, dim=0)
+        # print("Probabilities:", probabilities.numpy())
+
+        # 打印结果，将vec转换为列表以便打印
+        print("输入：%s, 预测类别：%d, 分数：%f" % (vec, predicted_class, res[predicted_class].item()))
 
 
 if __name__ == "__main__":
-    main()
-    # test_vec = [[0.97889086,0.15229675,0.31082123,0.03504317,0.88920843],
-    #             [0.74963533,0.5524256,0.95758807,0.95520434,0.84890681],
-    #             [0.00797868,0.67482528,0.13625847,0.34675372,0.19871392],
-    #             [0.09349776,0.59416669,0.92579291,0.41567412,0.1358894]]
-    # predict("model.pt", test_vec)
+    main()  # 运行主函数进行训练
+    # 注意：这里应该使用与保存时相同的文件扩展名，例如 "model.bin" 或 "model.pt"
+    test_vec = [
+        [0.97889086, 0.15229675, 0.31082123, 0.03504317, 0.88920843],
+        [0.74963533, 0.5524256, 0.95758807, 0.95520434, 0.84890681],
+        [0.00797868, 0.67482528, 0.13625847, 0.34675372, 0.19871392],
+        [0.09349776, 0.59416669, 0.92579291, 0.41567412, 0.1358894]
+    ]
+    # 确保文件路径与保存时一致
+    predict("model.bin", test_vec)  # 使用训练好的模型进行预测
