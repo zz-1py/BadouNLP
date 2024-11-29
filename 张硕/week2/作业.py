@@ -62,7 +62,8 @@ def evaluate(model):
         for y_p, y_t in zip(y_pred, y):   #与真实标签预测
             if torch.argmax(y_p) == int(y_t):
                 correct += 1
-            wrong += 1
+            else:
+                wrong += 1
     print("正确预测个数：%d, 正确率：%f" % (correct, correct / (correct + wrong)))
     return correct / (correct + wrong)
 
